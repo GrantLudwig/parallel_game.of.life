@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{423B5338-1E55-48FF-9147-D231AFF29416}</ProjectGuid>
+    <ProjectGuid>{33ECFD35-7B2E-4821-8903-F5AD40CAD7FE}</ProjectGuid>
     <RootNamespace>GameOfLife</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -78,7 +78,7 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CudaCompile Include="kernel.cu" />
+    <CudaCompile Include="GameOfLife.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\assert.h" />
