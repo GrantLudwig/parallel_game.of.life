@@ -1,121 +1,116 @@
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
+#include <cuda_runtime.h>
+#include <device_launch_parameters.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <cstdint>
+#include <assert.h>
+#include <algorithm>
 
-cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size);
+typedef unsigned int uint;
+typedef unsigned char uchar;
+typedef unsigned short ushort;
 
-__global__ void addKernel(int *c, const int *a, const int *b)
-{
-    int i = threadIdx.x;
-    c[i] = a[i] + b[i];
+__global__ void lifeCheck(const uchar* lifeData, uint worldWidth, uint worldHeight, uchar* resultLifeData) {
+	uint worldSize = worldWidth * worldHeight;
+
+	for (uint cellId = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+		cellId < worldSize;
+		cellId += blockDim.x * gridDim.x) {
+		uint x = cellId % worldWidth;
+		uint yAbs = cellId - x;
+		uint xLeft = (x + worldWidth - 1) % worldWidth;
+		uint xRight = (x + 1) % worldWidth;
+		uint yAbsUp = (yAbs + worldSize - worldWidth) % worldSize;
+		uint yAbsDown = (yAbs + worldWidth) % worldSize;
+
+		uint aliveCells = lifeData[xLeft + yAbsUp] + lifeData[x + yAbsUp] + lifeData[xRight + yAbsUp] 
+			+ lifeData[xLeft + yAbs] + lifeData[xRight + yAbs]
+			+ lifeData[xLeft + yAbsDown] + lifeData[x + yAbsDown] + lifeData[xRight + yAbsDown];
+
+		resultLifeData[x + yAbs] = aliveCells == 3 || (aliveCells == 2 && lifeData[x + yAbs]) ? 1 : 0;
+	}
+}
+
+void runLifeCheck(uchar*& d_lifeData, uchar*& d_lifeDataBuffer, size_t worldWidth, size_t worldHeight, size_t iterationsCount, ushort threadsCount) {
+	assert((worldWidth * worldHeight) % threadsCount == 0);
+	size_t reqBlocksCount = (worldWidth * worldHeight) / threadsCount;
+	ushort blocksCount = (ushort)std::min((size_t)32768, reqBlocksCount);
+
+	for (size_t i = 0; i < iterationsCount; i++) {
+		lifeCheck << <blocksCount, threadsCount >> > (d_lifeData, worldWidth, worldHeight, d_lifeDataBuffer);
+		std::swap(d_lifeData, d_lifeDataBuffer);
+	}
 }
 
 int main()
 {
-    const int arraySize = 5;
-    const int a[arraySize] = { 1, 2, 3, 4, 5 };
-    const int b[arraySize] = { 10, 20, 30, 40, 50 };
-    int c[arraySize] = { 0 };
+	const size_t WORLD_WIDTH = 10;
+	const size_t WORLD_HEIGHT = 10;
+	const size_t NUM_ITERATIONS = 100000000;
+	const ushort NUM_THREADS = 100;
 
-    // Add vectors in parallel.
-    cudaError_t cudaStatus = addWithCuda(c, a, b, arraySize);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "addWithCuda failed!");
-        return 1;
-    }
+	size_t size_data = sizeof(uchar) * WORLD_WIDTH * WORLD_HEIGHT;
+	// init host arrays
+	uchar *h_lifeData = reinterpret_cast<uchar *>(malloc(size_data));
+	
+	for (size_t i = 0; i < WORLD_WIDTH; i++) {
 
-    printf("{1,2,3,4,5} + {10,20,30,40,50} = {%d,%d,%d,%d,%d}\n",
-        c[0], c[1], c[2], c[3], c[4]);
+		for (size_t j = 0; j < WORLD_WIDTH; j++) {
+			h_lifeData[j * WORLD_WIDTH + i] = 0;
+		}
+	}
 
-    // cudaDeviceReset must be called before exiting in order for profiling and
-    // tracing tools such as Nsight and Visual Profiler to show complete traces.
-    cudaStatus = cudaDeviceReset();
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaDeviceReset failed!");
-        return 1;
-    }
+	h_lifeData[3 * WORLD_WIDTH + 3] = 1;
+	h_lifeData[4 * WORLD_WIDTH + 3] = 1;
+	h_lifeData[5 * WORLD_WIDTH + 3] = 1;
+
+	for (size_t i = 0; i < WORLD_WIDTH; i++) {
+
+		for (size_t j = 0; j < WORLD_WIDTH; j++) {
+			if (h_lifeData[j * WORLD_WIDTH + i] == 1)
+				printf("*");
+			else
+				printf("_");
+		}
+		printf("\n");
+	}
+
+	printf("\n");
+
+	uchar *h_lifeDataBuffer = reinterpret_cast<uchar *>(malloc(size_data));
+
+	//init device arrays
+	uchar *d_lifeData, *d_lifeDataBuffer;
+	cudaMalloc(reinterpret_cast<void **>(&d_lifeData), size_data);
+	cudaMalloc(reinterpret_cast<void **>(&d_lifeDataBuffer), size_data);
+
+	cudaMemcpy(d_lifeData, h_lifeData, size_data, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_lifeDataBuffer, h_lifeDataBuffer, size_data, cudaMemcpyHostToDevice);
+
+	runLifeCheck(d_lifeData, d_lifeDataBuffer, WORLD_HEIGHT, WORLD_HEIGHT, NUM_ITERATIONS, NUM_THREADS);
+
+	cudaMemcpy(h_lifeDataBuffer, d_lifeData, size_data, cudaMemcpyDeviceToHost);
+
+	for (size_t i = 0; i < WORLD_WIDTH; i++) {
+		
+		for (size_t j = 0; j < WORLD_WIDTH; j++) {
+			if (h_lifeDataBuffer[j * WORLD_WIDTH + i] == 1)
+				printf("*");
+			else
+				printf("_");
+		}
+		printf("\n");
+	}
+	char* name((char*)time_spent);
+	printf("Took ");
+	printf(name);
+
+	free(h_lifeData);
+	free(h_lifeDataBuffer);
+
+	cudaFree(d_lifeData);
+	cudaFree(d_lifeDataBuffer);
 
     return 0;
-}
-
-// Helper function for using CUDA to add vectors in parallel.
-cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size)
-{
-    int *dev_a = 0;
-    int *dev_b = 0;
-    int *dev_c = 0;
-    cudaError_t cudaStatus;
-
-    // Choose which GPU to run on, change this on a multi-GPU system.
-    cudaStatus = cudaSetDevice(0);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-        goto Error;
-    }
-
-    // Allocate GPU buffers for three vectors (two input, one output)    .
-    cudaStatus = cudaMalloc((void**)&dev_c, size * sizeof(int));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
-
-    cudaStatus = cudaMalloc((void**)&dev_a, size * sizeof(int));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
-
-    cudaStatus = cudaMalloc((void**)&dev_b, size * sizeof(int));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
-
-    // Copy input vectors from host memory to GPU buffers.
-    cudaStatus = cudaMemcpy(dev_a, a, size * sizeof(int), cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-        goto Error;
-    }
-
-    cudaStatus = cudaMemcpy(dev_b, b, size * sizeof(int), cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-        goto Error;
-    }
-
-    // Launch a kernel on the GPU with one thread for each element.
-    addKernel<<<1, size>>>(dev_c, dev_a, dev_b);
-
-    // Check for any errors launching the kernel
-    cudaStatus = cudaGetLastError();
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
-        goto Error;
-    }
-    
-    // cudaDeviceSynchronize waits for the kernel to finish, and returns
-    // any errors encountered during the launch.
-    cudaStatus = cudaDeviceSynchronize();
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
-        goto Error;
-    }
-
-    // Copy output vector from GPU buffer to host memory.
-    cudaStatus = cudaMemcpy(c, dev_c, size * sizeof(int), cudaMemcpyDeviceToHost);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-        goto Error;
-    }
-
-Error:
-    cudaFree(dev_c);
-    cudaFree(dev_a);
-    cudaFree(dev_b);
-    
-    return cudaStatus;
 }
