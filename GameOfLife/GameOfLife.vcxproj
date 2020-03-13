@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{48A1BAF6-F947-41E3-91B0-F8FC01FFAF2E}</ProjectGuid>
+    <ProjectGuid>{57361F6B-DF56-4979-8A51-4EF48DF780CE}</ProjectGuid>
     <RootNamespace>GameOfLife</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
