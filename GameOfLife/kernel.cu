@@ -72,8 +72,8 @@ int main()
 {
 	// setup data
 	// ==========
-	const size_t WORLD_WIDTH = 10000; // 10,000
-	const size_t WORLD_HEIGHT = 10000; // 10,000
+	const size_t WORLD_WIDTH = 10; // 10,000
+	const size_t WORLD_HEIGHT = 10; // 10,000
 	const size_t NUM_ITERATIONS = 10000000; // 10,000,000
 	const ushort NUM_THREADS = 5000; //GPU threads
 
@@ -88,6 +88,19 @@ int main()
 	uchar *lifeDataBuffer = reinterpret_cast<uchar *>(malloc(size_data));
 
 	memset(lifeData, 0, size_data); // initilize everything to 0
+
+	for (size_t i = 0; i < WORLD_WIDTH; i++) {
+
+		for (size_t j = 0; j < WORLD_WIDTH; j++) {
+			if (lifeData[j * WORLD_WIDTH + i] == 1)
+				printf("*");
+			else
+				printf("_");
+		}
+		printf("\n");
+	}
+
+	printf("\n"); */
 
 	lifeData[3 * WORLD_WIDTH + 3] = 1;
 	lifeData[4 * WORLD_WIDTH + 3] = 1;
