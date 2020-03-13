@@ -41,7 +41,7 @@ __global__ void nextGenCuda(const uchar* lifeData, uchar* resultLifeData, uint w
 	// blockDim.x: threads per block
 	// gridDim.x: blocks in grid
 	// blockDim.x * gridDim.x: threads per grid
-	for (uint cellId = __mul24(blockIdx.x, blockDim.x) + threadIdx.x; cellId < worldSize; cellId += blockDim.x * gridDim.x) { 
+	for (uint cellId = __mul24(blockIdx.x, blockDim.x) + threadIdx.x; cellId < worldSize; cellId += blockDim.x * gridDim.x) {
 		uint x = cellId % worldWidth;
 		uint yAbs = cellId - x;
 		uint xLeft = (x + worldWidth - 1) % worldWidth;
@@ -156,7 +156,7 @@ int main()
 	time_t seedTime = time(0);
 
 	FILE *fp;
-	fp = fopen("output.txt", "w+"); // open output file
+	fp = fopen("../output.txt", "w+"); // open output file
 
 	// serial using CPU
 	// ===================
@@ -273,134 +273,6 @@ int main()
 	cudaFree(d_lifeDataBuffer);
 
 	fclose(fp); // close output file
-
-	#pragma region old_code
-
-	//// serial using CPU
-	//// ===================
-
-	//printf("Serial: Setting up data for game\n");
-
-	//uchar *lifeData = reinterpret_cast<uchar *>(malloc(size_data));
-	//uchar *lifeDataBuffer = reinterpret_cast<uchar *>(malloc(size_data));
-
-	//memset(lifeData, 0, size_data); // initilize everything to 0
-
-	//lifeData[3 * WORLD_WIDTH + 0] = 1;
-	//lifeData[4 * WORLD_WIDTH + 0] = 1;
-	//lifeData[5 * WORLD_WIDTH + 0] = 1;
-
-	//lifeData[0 * WORLD_WIDTH + 3] = 1;
-	//lifeData[0 * WORLD_WIDTH + 4] = 1;
-	//lifeData[0 * WORLD_WIDTH + 5] = 1;
-
-	///*for (size_t i = 0; i < WORLD_WIDTH; i++) {
-
-	//	for (size_t j = 0; j < WORLD_WIDTH; j++) {
-	//		if (lifeData[j * WORLD_WIDTH + i] == 1)
-	//			printf("*");
-	//		else
-	//			printf("_");
-	//	}
-	//	printf("\n");
-	//}
-	//printf("\n");*/
-
-	//printf("Serial: Running game\n");
-	//clock_t begin = clock();
-
-	//runGameCpu(lifeData, lifeDataBuffer, WORLD_WIDTH, WORLD_HEIGHT, NUM_ITERATIONS);
-
-	//clock_t end = clock();
-	//double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-	//printf("Serial: Game complete\n");
-	//printf("Took %f sec for %zu iterations world size of %zu\n\n", time_spent, NUM_ITERATIONS, worldSize);
-
-	///*for (size_t i = 0; i < WORLD_WIDTH; i++) {
-
-	//	for (size_t j = 0; j < WORLD_WIDTH; j++) {
-	//		if (lifeData[j * WORLD_WIDTH + i] == 1)
-	//			printf("*");
-	//		else
-	//			printf("_");
-	//	}
-	//	printf("\n");
-	//}
-	//printf("\n");*/
-
-	//free(lifeData);
-	//free(lifeDataBuffer);
-
-	//// parallel using CUDA
-	//// ===================
-
-	//printf("Parallel: Setting up data for game\n");
-
-	//// init host arrays
-	//uchar *h_lifeData = reinterpret_cast<uchar *>(malloc(size_data));
-	//uchar *h_lifeDataBuffer = reinterpret_cast<uchar *>(malloc(size_data));
-
-	//memset(h_lifeData, 0, size_data); // initilize everything to 0
-
-	//h_lifeData[3 * WORLD_WIDTH + 0] = 1;
-	//h_lifeData[4 * WORLD_WIDTH + 0] = 1;
-	//h_lifeData[5 * WORLD_WIDTH + 0] = 1;
-
-	//h_lifeData[0 * WORLD_WIDTH + 3] = 1;
-	//h_lifeData[0 * WORLD_WIDTH + 4] = 1;
-	//h_lifeData[0 * WORLD_WIDTH + 5] = 1;
-
-	///*for (size_t i = 0; i < WORLD_WIDTH; i++) {
-
-	//	for (size_t j = 0; j < WORLD_WIDTH; j++) {
-	//		if (h_lifeData[j * WORLD_WIDTH + i] == 1)
-	//			printf("*");
-	//		else
-	//			printf("_");
-	//	}
-	//	printf("\n");
-	//}
-	//printf("\n");*/
-
-	////init device arrays
-	//uchar *d_lifeData, *d_lifeDataBuffer;
-	//cudaMalloc(reinterpret_cast<void **>(&d_lifeData), size_data);
-	//cudaMalloc(reinterpret_cast<void **>(&d_lifeDataBuffer), size_data);
-
-	//cudaMemcpy(d_lifeData, h_lifeData, size_data, cudaMemcpyHostToDevice);
-	//cudaMemcpy(d_lifeDataBuffer, h_lifeDataBuffer, size_data, cudaMemcpyHostToDevice);
-
-	//printf("Parallel: Running game\n");
-	//begin = clock();
-
-	//runGameCuda(d_lifeData, d_lifeDataBuffer, WORLD_HEIGHT, WORLD_HEIGHT, NUM_ITERATIONS, NUM_THREADS);
-
-	//end = clock();
-	//time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-	//printf("Parallel: Game complete\n");
-	//printf("Took %f sec for %zu iterations world size of %zu\n\n", time_spent, NUM_ITERATIONS, worldSize);
-
-	//cudaMemcpy(h_lifeDataBuffer, d_lifeData, size_data, cudaMemcpyDeviceToHost); // to get final
-
-	///*for (size_t i = 0; i < WORLD_WIDTH; i++) {
-
-	//	for (size_t j = 0; j < WORLD_WIDTH; j++) {
-	//		if (h_lifeDataBuffer[j * WORLD_WIDTH + i] == 1)
-	//			printf("*");
-	//		else
-	//			printf("_");
-	//	}
-	//	printf("\n");
-	//}
-	//printf("\n");*/
-
-	//free(h_lifeData);
-	//free(h_lifeDataBuffer);
-
-	//cudaFree(d_lifeData);
-	//cudaFree(d_lifeDataBuffer);
-
-	#pragma endregion old_code
 
 	return 0;
 }
