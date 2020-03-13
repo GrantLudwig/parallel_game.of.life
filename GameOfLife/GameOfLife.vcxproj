@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{8DEB52C9-3BA5-4E8B-9478-F645A30B458E}</ProjectGuid>
+    <ProjectGuid>{48A1BAF6-F947-41E3-91B0-F8FC01FFAF2E}</ProjectGuid>
     <RootNamespace>GameOfLife</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -81,11 +81,8 @@
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stddef.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\assert.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdlib.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\sys\types.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\uchar.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

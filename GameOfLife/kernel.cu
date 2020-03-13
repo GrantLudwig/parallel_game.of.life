@@ -24,7 +24,7 @@ __global__ void lifeCheck(const uchar* lifeData, uint worldWidth, uint worldHeig
 		uint yAbsUp = (yAbs + worldSize - worldWidth) % worldSize;
 		uint yAbsDown = (yAbs + worldWidth) % worldSize;
 
-		uint aliveCells = lifeData[xLeft + yAbsUp] + lifeData[x + yAbsUp] + lifeData[xRight + yAbsUp] 
+		uint aliveCells = lifeData[xLeft + yAbsUp] + lifeData[x + yAbsUp] + lifeData[xRight + yAbsUp]
 			+ lifeData[xLeft + yAbs] + lifeData[xRight + yAbs]
 			+ lifeData[xLeft + yAbsDown] + lifeData[x + yAbsDown] + lifeData[xRight + yAbsDown];
 
@@ -48,12 +48,12 @@ int main()
 	const size_t WORLD_WIDTH = 10;
 	const size_t WORLD_HEIGHT = 10;
 	const size_t NUM_ITERATIONS = 100000000;
-	const ushort NUM_THREADS = 100;
+	const ushort NUM_THREADS = 10;
 
 	size_t size_data = sizeof(uchar) * WORLD_WIDTH * WORLD_HEIGHT;
 	// init host arrays
 	uchar *h_lifeData = reinterpret_cast<uchar *>(malloc(size_data));
-	
+
 	for (size_t i = 0; i < WORLD_WIDTH; i++) {
 
 		for (size_t j = 0; j < WORLD_WIDTH; j++) {
@@ -93,7 +93,7 @@ int main()
 	cudaMemcpy(h_lifeDataBuffer, d_lifeData, size_data, cudaMemcpyDeviceToHost);
 
 	for (size_t i = 0; i < WORLD_WIDTH; i++) {
-		
+
 		for (size_t j = 0; j < WORLD_WIDTH; j++) {
 			if (h_lifeDataBuffer[j * WORLD_WIDTH + i] == 1)
 				printf("*");
@@ -102,9 +102,6 @@ int main()
 		}
 		printf("\n");
 	}
-	char* name((char*)time_spent);
-	printf("Took ");
-	printf(name);
 
 	free(h_lifeData);
 	free(h_lifeDataBuffer);
@@ -112,5 +109,5 @@ int main()
 	cudaFree(d_lifeData);
 	cudaFree(d_lifeDataBuffer);
 
-    return 0;
+	return 0;
 }
