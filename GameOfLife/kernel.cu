@@ -148,7 +148,8 @@ int main()
 	const size_t WORLD_WIDTH = 100;
 	const size_t WORLD_HEIGHT = 100;
 	const int ITERATION_TIME = 10;
-	const ushort NUM_THREADS = 1000; //GPU threads
+	const ushort NUM_THREADS = 1000; // GPU threads, will break at values above 1000 even with a larger world size
+										// Could be related to the GPU I am using
 
 	size_t worldSize = WORLD_WIDTH * WORLD_HEIGHT;
 	size_t size_data = sizeof(uchar) * WORLD_WIDTH * WORLD_HEIGHT;
@@ -156,7 +157,7 @@ int main()
 	time_t seedTime = time(0);
 
 	FILE *fp;
-	fp = fopen("../output.txt", "w+"); // open output file
+	fp = fopen("output.txt", "w+"); // open output file
 
 	// serial using CPU
 	// ===================
@@ -273,6 +274,9 @@ int main()
 	cudaFree(d_lifeDataBuffer);
 
 	fclose(fp); // close output file
+
+	printf("Press Enter to Close\n");
+	getchar();
 
 	return 0;
 }
