@@ -1,1 +1,0 @@
-# parallel_game.of.life
